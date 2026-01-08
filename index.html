@@ -11,7 +11,7 @@
       color: white;
     }
     .container {
-      max-width: 400px;
+      max-width: 420px;
       margin: auto;
       padding: 20px;
     }
@@ -19,7 +19,7 @@
       text-align: center;
       font-size: 22px;
     }
-    input, button {
+    input, button, select {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
@@ -37,49 +37,94 @@
       margin-top: 15px;
       border-radius: 5px;
     }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Gestor de Internet</h1><div class="box">
+    <h1>Gestor de Internet</h1><div class="box" id="loginBox">
   <input id="user" placeholder="Nombre o código" />
   <button onclick="login()">Entrar</button>
 </div>
 
-<div class="box" id="panel" style="display:none;">
+<div class="box hidden" id="clientePanel">
   <p id="estado"></p>
-  <p><strong>Contraseña:</strong></p>
-  <p id="clave"></p>
+  <p>Contraseñas disponibles:</p>
+  <ul id="claves"></ul>
+</div>
+
+<div class="box hidden" id="adminPanel">
+  <h3>Panel Admin</h3>
+  <input id="newUser" placeholder="Nombre cliente" />
+  <input id="months" type="number" placeholder="Meses pagados" />
+  <button onclick="addClient()">Guardar cliente</button>
+
+  <input id="newPass" placeholder="Nueva contraseña WiFi" />
+  <button onclick="addPassword()">Agregar contraseña</button>
 </div>
 
   </div>  <script>
-    const DATA = {
+    const defaultData = {
       admin: "admin123",
-      wifi: "CLAVE-WIFI-001",
+      passwords: ["CLAVE-001"],
       clientes: {
-        dylan: { activo: true },
-        prueba: { activo: false }
+        dylan: { meses: 1, activo: true }
       }
     };
 
-    localStorage.setItem('data', JSON.stringify(DATA));
+    if (!localStorage.getItem('data')) {
+      localStorage.setItem('data', JSON.stringify(defaultData));
+    }
 
     function login() {
       const user = document.getElementById('user').value;
       const data = JSON.parse(localStorage.getItem('data'));
-      const panel = document.getElementById('panel');
-      const estado = document.getElementById('estado');
-      const clave = document.getElementById('clave');
 
-      if (data.clientes[user]?.activo) {
+      document.getElementById('loginBox').classList.add('hidden');
+
+      if (user === data.admin) {
+        document.getElementById('adminPanel').classList.remove('hidden');
+        return;
+      }
+
+      const cliente = data.clientes[user];
+      const panel = document.getElementById('clientePanel');
+      const estado = document.getElementById('estado');
+      const claves = document.getElementById('claves');
+
+      panel.classList.remove('hidden');
+      claves.innerHTML = '';
+
+      if (cliente && cliente.activo) {
         estado.textContent = 'Acceso activo';
-        clave.textContent = data.wifi;
-        panel.style.display = 'block';
+        const max = Math.min(cliente.meses, 5);
+        data.passwords.slice(-max).forEach(p => {
+          const li = document.createElement('li');
+          li.textContent = p;
+          claves.appendChild(li);
+        });
       } else {
         estado.textContent = 'Acceso vencido o inexistente';
-        clave.textContent = '';
-        panel.style.display = 'block';
       }
+    }
+
+    function addClient() {
+      const user = document.getElementById('newUser').value;
+      const months = parseInt(document.getElementById('months').value);
+      const data = JSON.parse(localStorage.getItem('data'));
+
+      data.clientes[user] = { meses: months, activo: months > 0 };
+      localStorage.setItem('data', JSON.stringify(data));
+      alert('Cliente guardado');
+    }
+
+    function addPassword() {
+      const pass = document.getElementById('newPass').value;
+      const data = JSON.parse(localStorage.getItem('data'));
+
+      data.passwords.push(pass);
+      localStorage.setItem('data', JSON.stringify(data));
+      alert('Contraseña agregada');
     }
   </script></body>
 </html>
