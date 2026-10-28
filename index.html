@@ -1,130 +1,109 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gestor de Internet</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #1a237e;
-      color: white;
-    }
-    .container {
-      max-width: 420px;
-      margin: auto;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      font-size: 22px;
-    }
-    input, button, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 5px;
-    }
-    button {
-      background: #3949ab;
-      color: white;
-      cursor: pointer;
-    }
-    .box {
-      background: rgba(255,255,255,0.1);
-      padding: 15px;
-      margin-top: 15px;
-      border-radius: 5px;
-    }
-    .hidden { display: none; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi web privada</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Gestor de Internet</h1><div class="box" id="loginBox">
-  <input id="user" placeholder="Nombre o código" />
-  <button onclick="login()">Entrar</button>
-</div>
 
-<div class="box hidden" id="clientePanel">
-  <p id="estado"></p>
-  <p>Contraseñas disponibles:</p>
-  <ul id="claves"></ul>
-</div>
+  <h1>🖼️ Galería privada</h1>
+  <p class="subtitulo" id="subtitulo">Inicia sesión para ver las publicaciones</p>
 
-<div class="box hidden" id="adminPanel">
-  <h3>Panel Admin</h3>
-  <input id="newUser" placeholder="Nombre cliente" />
-  <input id="months" type="number" placeholder="Meses pagados" />
-  <button onclick="addClient()">Guardar cliente</button>
+  <!-- ---------- Pantalla de login ---------- -->
+  <form id="login" class="login-box">
+    <input type="email" id="email" placeholder="Correo" required autocomplete="username">
+    <input type="password" id="password" placeholder="Contraseña" required autocomplete="current-password">
+    <button type="submit" class="btn">Entrar</button>
+    <p class="error" id="error"></p>
+  </form>
 
-  <input id="newPass" placeholder="Nueva contraseña WiFi" />
-  <button onclick="addPassword()">Agregar contraseña</button>
-</div>
+  <!-- ---------- Contenido privado (solo con sesión) ---------- -->
+  <div id="contenido" class="oculto">
+    <div class="boton-container">
+      <button class="btn" id="salir">Cerrar sesión</button>
+    </div>
+    <div class="galeria-container" id="galeria"></div>
+  </div>
 
-  </div>  <script>
-    const defaultData = {
-      admin: "admin123",
-      passwords: ["CLAVE-001"],
-      clientes: {
-        dylan: { meses: 1, activo: true }
-      }
-    };
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // 1) Pega aquí los datos de tu proyecto de Supabase
+    //    (Project Settings > API). La "anon key" es pública por diseño.
+    const SUPABASE_URL = "PEGA_AQUI_TU_URL";
+    const SUPABASE_KEY = "PEGA_AQUI_TU_ANON_KEY";
 
-    if (!localStorage.getItem('data')) {
-      localStorage.setItem('data', JSON.stringify(defaultData));
-    }
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    function login() {
-      const user = document.getElementById('user').value;
-      const data = JSON.parse(localStorage.getItem('data'));
+    const loginForm = document.getElementById("login");
+    const contenido = document.getElementById("contenido");
+    const galeria = document.getElementById("galeria");
+    const errorEl = document.getElementById("error");
+    const subtitulo = document.getElementById("subtitulo");
 
-      document.getElementById('loginBox').classList.add('hidden');
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorEl.textContent = "";
+      const { error } = await db.auth.signInWithPassword({
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+      });
+      if (error) errorEl.textContent = "Correo o contraseña incorrectos";
+    });
 
-      if (user === data.admin) {
-        document.getElementById('adminPanel').classList.remove('hidden');
+    document.getElementById("salir").addEventListener("click", () => db.auth.signOut());
+
+    async function cargarPublicaciones() {
+      galeria.textContent = "";
+      const { data, error } = await db
+        .from("publicaciones")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        galeria.textContent = "No se pudieron cargar las publicaciones.";
         return;
       }
 
-      const cliente = data.clientes[user];
-      const panel = document.getElementById('clientePanel');
-      const estado = document.getElementById('estado');
-      const claves = document.getElementById('claves');
+      data.forEach((p) => {
+        const card = document.createElement("div");
+        card.className = "imagen-card";
 
-      panel.classList.remove('hidden');
-      claves.innerHTML = '';
+        if (p.imagen_url) {
+          const img = document.createElement("img");
+          img.src = p.imagen_url;
+          img.alt = p.titulo;
+          card.appendChild(img);
+        }
 
-      if (cliente && cliente.activo) {
-        estado.textContent = 'Acceso activo';
-        const max = Math.min(cliente.meses, 5);
-        data.passwords.slice(-max).forEach(p => {
-          const li = document.createElement('li');
-          li.textContent = p;
-          claves.appendChild(li);
-        });
+        const h3 = document.createElement("h3");
+        h3.textContent = p.titulo;
+        const txt = document.createElement("p");
+        txt.textContent = p.descripcion || "";
+
+        card.append(h3, txt);
+        galeria.appendChild(card);
+      });
+    }
+
+    // Muestra u oculta todo según haya sesión o no
+    function actualizarPantalla(session) {
+      if (session) {
+        loginForm.classList.add("oculto");
+        contenido.classList.remove("oculto");
+        subtitulo.textContent = "Publicaciones";
+        cargarPublicaciones();
       } else {
-        estado.textContent = 'Acceso vencido o inexistente';
+        loginForm.classList.remove("oculto");
+        contenido.classList.add("oculto");
+        galeria.textContent = "";
+        subtitulo.textContent = "Inicia sesión para ver las publicaciones";
       }
     }
 
-    function addClient() {
-      const user = document.getElementById('newUser').value;
-      const months = parseInt(document.getElementById('months').value);
-      const data = JSON.parse(localStorage.getItem('data'));
+    db.auth.onAuthStateChange((_evento, session) => actualizarPantalla(session));
+  </script>
 
-      data.clientes[user] = { meses: months, activo: months > 0 };
-      localStorage.setItem('data', JSON.stringify(data));
-      alert('Cliente guardado');
-    }
-
-    function addPassword() {
-      const pass = document.getElementById('newPass').value;
-      const data = JSON.parse(localStorage.getItem('data'));
-
-      data.passwords.push(pass);
-      localStorage.setItem('data', JSON.stringify(data));
-      alert('Contraseña agregada');
-    }
-  </script></body>
+</body>
 </html>
