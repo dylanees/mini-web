@@ -55,7 +55,6 @@
     document.getElementById("salir").addEventListener("click", () => db.auth.signOut());
 
     async function cargarPublicaciones() {
-      galeria.textContent = "";
       const { data, error } = await db
         .from("publicaciones")
         .select("*")
@@ -66,6 +65,7 @@
         return;
       }
 
+      const tarjetas = [];
       data.forEach((p) => {
         const card = document.createElement("div");
         card.className = "imagen-card";
@@ -83,8 +83,10 @@
         txt.textContent = p.descripcion || "";
 
         card.append(h3, txt);
-        galeria.appendChild(card);
+        tarjetas.push(card);
       });
+      // Reemplaza todo de una vez: si la carga corre dos veces, no se duplica
+      galeria.replaceChildren(...tarjetas);
     }
 
     // Muestra u oculta todo según haya sesión o no
