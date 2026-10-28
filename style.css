@@ -1,48 +1,120 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otro Cuadro HTML</title>
-    <style>
-        /* Estilos para el contenedor principal */
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #4B0082; /* Azul índigo */
-            margin: 0;
-        }
-        /* Estilos para el cuadro */
-        .cuadro {
-            background-color: white;
-            border: 5px solid #4B0082; /* Azul índigo */
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        /* Estilos para el contenido dentro del cuadro */
-        .contenido {
-            margin-top: 20px; /* Espacio superior */
-        }
-    </style>
-</head>
-<body>
-    <!-- Contenedor principal -->
-    <div class="cuadro">
-        <!-- Título -->
-        <h2>Más Servicios</h2>
-        <!-- Contenido -->
-        <div class="contenido">
-            <p>1) Wi-Fi para ti solo, $2.000 por una semana.</p>
-            <p>&nbsp;</p>
-            <p>2) Wi-Fi para ti y 4 personas más (5 en total), $1.000 por persona, por una semana.</p>
-            <p>&nbsp;</p>
-            <p>3) Contratar VIP, $3.000 por una semana (te permite conectarte siempre, no importa si alguien más contrató un servicio privado).</p>
-            <p>&nbsp;</p>
-            <p>⚠️ Importante ⚠️ Estos servicios solo se pueden activar cuando el servicio de $500 no está activado. Para contratar estos servicios, hablar con Dylan.</p>
-        </div>
-    </div>
-</body>
-</html>
+/* Fondo degradado futurista */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f0c29, #302b63, #6a0572);
+  background-attachment: fixed;
+  color: #fff;
+}
+
+h1 {
+  text-align: center;
+  margin: 20px 0 5px 0;
+  font-size: 2.5em;
+}
+
+.subtitulo {
+  text-align: center;
+  font-size: 1.2em;
+  margin-bottom: 30px;
+  color: #ddd;
+}
+
+.oculto { display: none !important; }
+
+/* ---------- Login ---------- */
+.login-box {
+  max-width: 340px;
+  margin: 40px auto;
+  padding: 24px;
+  background: rgba(0,0,0,0.6);
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(255,121,198,0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-box input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ff79c6;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 1em;
+}
+
+.login-box input::placeholder { color: #bbb; }
+
+.error {
+  color: #ff8a8a;
+  text-align: center;
+  min-height: 1.2em;
+  margin: 0;
+}
+
+/* ---------- Botones ---------- */
+.boton-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.btn {
+  padding: 12px 28px;
+  background: linear-gradient(90deg, #4b6cb7, #182848);
+  color: #fff;
+  border: none;
+  font-weight: bold;
+  font-size: 1em;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.9);
+  transform: scale(1.05);
+}
+
+/* ---------- Galería ---------- */
+.galeria-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+.imagen-card {
+  background: rgba(0,0,0,0.6);
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(255,121,198,0.5);
+  overflow: hidden;
+  width: 300px;
+  text-align: center;
+}
+
+.imagen-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-bottom: 2px solid #ff79c6;
+}
+
+.imagen-card h3 {
+  margin: 10px 0 5px 0;
+  font-size: 1.1em;
+  color: #ff79c6;
+}
+
+.imagen-card p {
+  padding: 0 10px 15px;
+  font-size: 0.9em;
+  color: #ddd;
+}
