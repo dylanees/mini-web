@@ -8,8 +8,9 @@
 </head>
 <body>
 
-  <h1>🖼️ Galería privada</h1>
-  <p class="subtitulo" id="subtitulo">Inicia sesión para ver las publicaciones</p>
+  <h1>Publicaciones privadas</h1>
+  <!-- Mini descripción: escribe tu texto entre las etiquetas <p>. Si lo dejas vacío, solo queda el espacio. -->
+  <p class="subtitulo"></p>
 
   <!-- ---------- Pantalla de login ---------- -->
   <form id="login" class="login-box">
@@ -21,10 +22,31 @@
 
   <!-- ---------- Contenido privado (solo con sesión) ---------- -->
   <div id="contenido" class="oculto">
+    <button class="btn-salir" id="salir" title="Cerrar sesión" aria-label="Cerrar sesión">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+        <line x1="12" y1="2" x2="12" y2="12"/>
+      </svg>
+    </button>
+
     <div class="boton-container">
-      <button class="btn" id="salir">Cerrar sesión</button>
+      <a class="btn" href="https://youtu.be/dQw4w9WgXcQ" target="_blank" rel="noopener">Recompensas gratis</a>
     </div>
+
+    <div class="buscador">
+      <input type="search" id="buscar" placeholder="🔍 Buscar publicaciones..." autocomplete="off">
+    </div>
+
+    <div class="boton-container">
+      <button class="btn" id="abajo">⬇ Ir abajo</button>
+    </div>
+
     <div class="galeria-container" id="galeria"></div>
+    <p class="sin-resultados oculto" id="sinResultados">No hay publicaciones que coincidan.</p>
+
+    <div class="boton-container" id="fin">
+      <button class="btn" id="arriba">⬆ Volver arriba</button>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -40,7 +62,6 @@
     const contenido = document.getElementById("contenido");
     const galeria = document.getElementById("galeria");
     const errorEl = document.getElementById("error");
-    const subtitulo = document.getElementById("subtitulo");
 
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -87,20 +108,46 @@
       });
       // Reemplaza todo de una vez: si la carga corre dos veces, no se duplica
       galeria.replaceChildren(...tarjetas);
+      filtrar();
     }
+
+    // Quita mayúsculas y acentos para que "camion" encuentre "Camión"
+    const limpiar = (t) =>
+      t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+    const buscar = document.getElementById("buscar");
+    const sinResultados = document.getElementById("sinResultados");
+
+    function filtrar() {
+      const q = limpiar(buscar.value.trim());
+      let visibles = 0;
+      for (const card of galeria.children) {
+        const coincide = limpiar(card.textContent).includes(q);
+        card.classList.toggle("oculto", !coincide);
+        if (coincide) visibles++;
+      }
+      sinResultados.classList.toggle("oculto", visibles > 0 || galeria.children.length === 0);
+    }
+
+    buscar.addEventListener("input", filtrar);
+
+    // Botones para desplazarse
+    document.getElementById("abajo").addEventListener("click", () =>
+      document.getElementById("fin").scrollIntoView({ behavior: "smooth" }));
+    document.getElementById("arriba").addEventListener("click", () =>
+      window.scrollTo({ top: 0, behavior: "smooth" }));
 
     // Muestra u oculta todo según haya sesión o no
     function actualizarPantalla(session) {
       if (session) {
         loginForm.classList.add("oculto");
         contenido.classList.remove("oculto");
-        subtitulo.textContent = "Publicaciones";
         cargarPublicaciones();
       } else {
         loginForm.classList.remove("oculto");
         contenido.classList.add("oculto");
         galeria.textContent = "";
-        subtitulo.textContent = "Inicia sesión para ver las publicaciones";
+        buscar.value = "";
       }
     }
 
